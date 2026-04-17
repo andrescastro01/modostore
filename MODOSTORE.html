@@ -691,7 +691,7 @@ function parseCSV(csv) {
     }
 
     const rows = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
-    const headers = splitRow(rows[0]);
+    const headers = splitRow(rows[0]).map(h => h.toLowerCase());
     console.log('[parseCSV] Headers detectados:', headers);
     const mapped = rows.slice(1).map((row, i) => {
         const vals = splitRow(row);
