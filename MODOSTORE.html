@@ -691,14 +691,17 @@ function parseCSV(csv) {
 
 async function loadCatalog() {
     try {
+        console.log('[loadCatalog] Intentando fetch al Sheet:', SHEET_CSV_URL);
         const res = await fetch(SHEET_CSV_URL);
         if (!res.ok) throw new Error('Sheet no disponible');
         const csv = await res.text();
         const parsed = parseCSV(csv);
         CATALOG = parsed.length > 0 ? parsed : FALLBACK_PRODUCTS;
+        console.log('[loadCatalog] Sheet cargado OK. Productos:', CATALOG.length, '| Fuente:', parsed.length > 0 ? 'SHEET' : 'FALLBACK (sheet vacío)');
     } catch (e) {
-        console.warn('No se pudo cargar el Sheet, usando productos de respaldo.', e);
+        console.warn('[loadCatalog] Fetch falló, usando FALLBACK_PRODUCTS.', e);
         CATALOG = FALLBACK_PRODUCTS;
+        console.log('[loadCatalog] FALLBACK activo. Productos:', CATALOG.length);
     }
     renderGrid('hoodies', 'grid-hoodies');
     renderGrid('hats',    'grid-hats');
