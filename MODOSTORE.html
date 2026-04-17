@@ -692,12 +692,15 @@ function parseCSV(csv) {
 
     const rows = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
     const headers = splitRow(rows[0]);
-    return rows.slice(1).map((row, i) => {
+    console.log('[parseCSV] Headers detectados:', headers);
+    const mapped = rows.slice(1).map((row, i) => {
         const vals = splitRow(row);
         const obj = { id: i + 1 };
         headers.forEach((h, j) => obj[h] = vals[j] ?? '');
         return obj;
-    }).filter(p => p.name && p.name.length > 0);
+    });
+    if (mapped.length > 0) console.log('[parseCSV] Primer objeto (antes del filter):', mapped[0]);
+    return mapped.filter(p => p.name && p.name.length > 0);
 }
 
 async function loadCatalog() {
