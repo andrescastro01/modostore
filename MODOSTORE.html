@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="es"><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space%20Grotesk:wght@100;200;300;400;500;600;700;800;900&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton:wght@100;200;300;400;500;600;700;800;900&amp;display=swap">
+        <script>
+            (function() {
+                const OriginalIntersectionObserver = window.IntersectionObserver;
+                if (!OriginalIntersectionObserver) return;
+                window.IntersectionObserver = function(callback, options) {
+                    const observer = new OriginalIntersectionObserver(function(entries, obs) {
+                        // Force all entries to appear as intersecting
+                        const modifiedEntries = entries.map(entry => ({
+                            target: entry.target,
+                            isIntersecting: true,
+                            intersectionRatio: 1,
+                            boundingClientRect: entry.boundingClientRect,
+                            intersectionRect: entry.intersectionRect,
+                            rootBounds: entry.rootBounds,
+                            time: entry.time,
+                        }));
+                        callback(modifiedEntries, obs);
+                    }, options);
+
+                    // Also immediately trigger for any observed element
+                    const originalObserve = observer.observe.bind(observer);
+                    observer.observe = function(target) {
+                        originalObserve(target);
+                        // Trigger callback immediately with the element as intersecting
+                        setTimeout(() => {
+                            callback([{
+                                target: target,
+                                isIntersecting: true,
+                                intersectionRatio: 1,
+                                boundingClientRect: target.getBoundingClientRect(),
+                                intersectionRect: target.getBoundingClientRect(),
+                                rootBounds: null,
+                                time: performance.now(),
+                            }], observer);
+                        }, 0);
+                    };
+
+                    return observer;
+                };
+                window.IntersectionObserver.prototype = OriginalIntersectionObserver.prototype;
+            })();
+        </script>
+       
+        <script>
+            (function() {
+                // console.log("[Iframe] Script injected and running");
+                document.addEventListener('error', function(e) {
+                    // console.log("[Iframe] Error event captured:", e);
+                    if (e.target && e.target.tagName) {
+                         // console.log("[Iframe] Target tag:", e.target.tagName);
+                    }
+                    
+                    if (e.target && e.target.tagName.toLowerCase() === 'img') {
+                        // console.log("[Iframe] Image error detected:", e.target.src);
+                        const img = e.target;
+                        const alt = img.alt;
+                        if (alt && !img.dataset.retried) {
+                            // console.log("[Iframe] Posting IMAGE_ERROR for:", alt);
+                            img.dataset.retried = 'true';
+                            window.parent.postMessage({
+                                type: 'IMAGE_ERROR',
+                                alt: alt,
+                                src: img.src
+                            }, '*');
+                        } else {
+                            // console.log("[Iframe] Skipping IMAGE_ERROR (no alt or already retried):", { alt, retried: img.dataset.retried });
+                        }
+                    }
+                }, true);
+
+                window.addEventListener('message', function(e) {
+                    if (e.data?.type === 'IMAGE_REPLACED' && e.data?.newSrc) {
+                        // console.log("[Iframe] Received IMAGE_REPLACED:", e.data);
+                        const images = document.getElementsByTagName('img');
+                        for (let img of images) {
+                            if (img.src === e.data.originalSrc || (img.dataset.retried === 'true' && !img.complete)) {
+                                img.src = e.data.newSrc;
+                            }
+                        }
+                    }
+                });
+            })();
+        </script>
+       
+        <script>
+            (function() {
+                window.__image_debug_v1 = true;
+                if (window.__tailwind_warn_suppressed) return;
+                window.__tailwind_warn_suppressed = true;
+                const originalWarn = console.warn;
+                console.warn = (...args) => {
+                    if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) {
+                        return;
+                    }
+                    originalWarn.apply(console, args);
+                };
+            })();
+        </script>
+        <script>
+            (function() {
+                 // Removed Link Editing Interception
+            })();
+        </script>
+        <style>
+            .h-screen { min-height: 800px !important; height: auto !important; }
+            .min-h-screen { min-height: 800px !important; }
+            
+            html, body {
+                min-height: 800px !important;
+                width: 100% !important;
+                overflow: auto !important;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            ::-webkit-scrollbar {
+                display: none;
+            }
+            .editor-link-hover {
+                outline: 2px solid #3b82f6 !important;
+                cursor: pointer !important;
+            }
+            /* Fix h-full in flex containers - use stretch instead of percentage */
+            .flex > .h-full {
+                height: auto !important;
+                align-self: stretch !important;
+                min-height: 0;
+            }
+            /* Fix fixed-positioned full-height sidebars */
+            /* Convert to absolute so height: 100% is relative to document, not viewport */
+            .fixed.h-full,
+            nav.fixed.h-full,
+            aside.fixed.h-full {
+                position: absolute !important;
+            }
+            /* Force visibility on scroll-animation hidden elements */
+            /* These override common patterns used by AOS, ScrollReveal, GSAP, and custom animations */
+            [style*="opacity: 0"],
+            [style*="opacity:0"] {
+                opacity: 1 !important;
+            }
+            [style*="clip-path: inset"],
+            [style*="clip-path:inset"] {
+                clip-path: none !important;
+            }
+            [style*="visibility: hidden"],
+            [style*="visibility:hidden"] {
+                visibility: visible !important;
+            }
+            /* AOS library data attributes */
+            [data-aos] {
+                opacity: 1 !important;
+                transform: none !important;
+                visibility: visible !important;
+            }
+            /* Common animation class patterns */
+            [class*="aos-"],
+            [class*="scroll-"],
+            [class*="reveal"],
+            [class*="fade-"],
+            [class*="slide-"] {
+                opacity: 1 !important;
+                transform: none !important;
+                clip-path: none !important;
+                visibility: visible !important;
+            }
+        </style>
+       
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MODO STORE | Premium Streetwear &amp; Caps</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/thin/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/light/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@300;400;700&amp;display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #030303;
+            --text-main: #E5E5E5;
+            --text-muted: #666666;
+            --border-color: #1F1F1F;
+        }
+        
+        /* Un solo contenedor de scroll: body. html no scrollea. */
+        html {
+            overflow: hidden !important;
+            height: 100% !important;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            overflow-y: scroll !important;
+            height: 100% !important;
+        }
+
+        h1, h2, h3, .font-brutal {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Anton', sans-serif;
+            letter-spacing: 0.05em;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+
+        /* Utilities */
+        .text-stroke {
+            -webkit-text-stroke: 1px #333;
+            color: transparent;
+        }
+        
+        .text-stroke-silver {
+            -webkit-text-stroke: 1px #888;
+            color: transparent;
+        }
+
+        .border-grid {
+            border: 1px solid var(--border-color);
+        }
+
+        /* Structural Hover Effects */
+        .img-wrap {
+            overflow: hidden;
+        }
+        .img-wrap img {
+            transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1), filter 0.8s ease;
+            filter: grayscale(80%) contrast(1.1);
+        }
+        .img-wrap:hover img {
+            transform: scale(1.05);
+            filter: grayscale(0%) contrast(1.2);
+        }
+
+        /* Chrome Logo FX */
+        .chrome-logo {
+            filter: drop-shadow(0px 25px 35px rgba(0, 0, 0, 0.9));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Horizontal catalog scroll */
+        .catalog-scroll {
+            -webkit-overflow-scrolling: touch;
+            scroll-snap-type: x mandatory;
+            cursor: grab;
+        }
+        .catalog-scroll:active { cursor: grabbing; }
+        .catalog-scroll > article { scroll-snap-align: start; }
+        .catalog-scroll::-webkit-scrollbar { height: 2px; }
+        .catalog-scroll::-webkit-scrollbar-track { background: #111; }
+        .catalog-scroll::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+
+        /* Navbar button press animation */
+        .nav-btn {
+            position: relative;
+            transition: color 0.2s;
+        }
+        .nav-btn::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: white;
+            transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .nav-btn:hover::after { width: 100%; }
+        .nav-btn:active { transform: scale(0.94); }
+
+        /* View transition animations */
+        @keyframes viewIn {
+            from { opacity: 0; transform: translateY(22px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes viewOut {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(-14px); }
+        }
+        .view-enter { animation: viewIn  0.38s cubic-bezier(0.22, 1, 0.36, 1) both; }
+        .view-exit  { animation: viewOut 0.22s ease-in both; }
+
+        /* Slow Pan Background */
+        @keyframes pan-bg {
+            0% { transform: scale(1) translateY(0); }
+            100% { transform: scale(1.1) translateY(-2%); }
+        }
+        .bg-pan {
+            animation: pan-bg 20s linear infinite alternate;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.bottom-12{bottom:3rem}.left-0{left:0px}.left-\[-5\%\]{left:-5%}.right-6{right:1.5rem}.right-\[-5\%\]{right:-5%}.top-0{top:0px}.top-\[-10\%\]{top:-10%}.top-\[-5\%\]{top:-5%}.z-0{z-index:0}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.-mt-10{margin-top:-2.5rem}.mb-1{margin-bottom:0.25rem}.mb-10{margin-bottom:2.5rem}.mb-2{margin-bottom:0.5rem}.mb-24{margin-bottom:6rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mb-\[-100px\]{margin-bottom:-100px}.ml-\[-10vw\]{margin-left:-10vw}.ml-auto{margin-left:auto}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-24{margin-top:6rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.hidden{display:none}.aspect-square{aspect-ratio:1 / 1}.h-\[1px\]{height:1px}.h-\[240px\]{height:240px}.h-\[500px\]{height:500px}.h-\[600px\]{height:600px}.h-\[700px\]{height:700px}.h-\[800px\]{height:800px}.h-auto{height:auto}.h-full{height:100%}.min-h-\[800px\]{min-height:800px}.w-0{width:0px}.w-\[1200px\]{width:1200px}.w-\[90\%\]{width:90%}.w-full{width:100%}.max-w-6xl{max-width:72rem}.max-w-7xl{max-width:80rem}.max-w-\[1000px\]{max-width:1000px}.max-w-\[320px\]{max-width:320px}.max-w-\[85\%\]{max-width:85%}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.translate-y-1\/3{--tw-translate-y:33.333333%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.rotate-180{--tw-rotate:180deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.transform{transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%, 100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(0.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,0.2,1)}}.animate-bounce{animation:bounce 1s infinite}.select-none{-webkit-user-select:none;user-select:none}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-end{align-items:flex-end}.items-center{align-items:center}.items-stretch{align-items:stretch}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0{gap:0px}.gap-12{gap:3rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-32{gap:8rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.scroll-smooth{scroll-behavior:smooth}.whitespace-nowrap{white-space:nowrap}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-l-2{border-left-width:2px}.border-r-2{border-right-width:2px}.border-t{border-top-width:1px}.border-\[\#111\]{--tw-border-opacity:1;border-color:rgb(17 17 17 / var(--tw-border-opacity, 1))}.border-\[\#1A1A1A\]{--tw-border-opacity:1;border-color:rgb(26 26 26 / var(--tw-border-opacity, 1))}.border-\[\#222\]{--tw-border-opacity:1;border-color:rgb(34 34 34 / var(--tw-border-opacity, 1))}.border-\[\#333\]{--tw-border-opacity:1;border-color:rgb(51 51 51 / var(--tw-border-opacity, 1))}.border-gray-800{--tw-border-opacity:1;border-color:rgb(31 41 55 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-white\/10{border-color:rgb(255 255 255 / 0.1)}.border-white\/20{border-color:rgb(255 255 255 / 0.2)}.border-white\/5{border-color:rgb(255 255 255 / 0.05)}.bg-\[\#030303\]{--tw-bg-opacity:1;background-color:rgb(3 3 3 / var(--tw-bg-opacity, 1))}.bg-\[\#050505\]{--tw-bg-opacity:1;background-color:rgb(5 5 5 / var(--tw-bg-opacity, 1))}.bg-\[\#0A0A0A\]{--tw-bg-opacity:1;background-color:rgb(10 10 10 / var(--tw-bg-opacity, 1))}.bg-\[\#111\]{--tw-bg-opacity:1;background-color:rgb(17 17 17 / var(--tw-bg-opacity, 1))}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-gradient-to-b{background-image:linear-gradient(to bottom, var(--tw-gradient-stops))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-t{background-image:linear-gradient(to top, var(--tw-gradient-stops))}.from-\[\#030303\]{--tw-gradient-from:#030303 var(--tw-gradient-from-position);--tw-gradient-to:rgb(3 3 3 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-\[\#050505\]{--tw-gradient-from:#050505 var(--tw-gradient-from-position);--tw-gradient-to:rgb(5 5 5 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-\[\#0A0A0A\]{--tw-gradient-from:#0A0A0A var(--tw-gradient-from-position);--tw-gradient-to:rgb(10 10 10 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-\[\#030303\]\/40{--tw-gradient-to:rgb(3 3 3 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(3 3 3 / 0.4) var(--tw-gradient-via-position), var(--tw-gradient-to)}.via-\[\#050505\]\/60{--tw-gradient-to:rgb(5 5 5 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), rgb(5 5 5 / 0.6) var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-\[\#030303\]{--tw-gradient-to:#030303 var(--tw-gradient-to-position)}.to-black\/20{--tw-gradient-to:rgb(0 0 0 / 0.2) var(--tw-gradient-to-position)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.object-contain{object-fit:contain}.object-cover{object-fit:cover}.object-center{object-position:center}.object-left{object-position:left}.object-top{object-position:top}.p-4{padding:1rem}.p-8{padding:2rem}.px-10{padding-left:2.5rem;padding-right:2.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-24{padding-top:6rem;padding-bottom:6rem}.py-32{padding-top:8rem;padding-bottom:8rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.pb-12{padding-bottom:3rem}.pb-8{padding-bottom:2rem}.pl-4{padding-left:1rem}.pl-6{padding-left:1.5rem}.pr-6{padding-right:1.5rem}.pt-6{padding-top:1.5rem}.pt-8{padding-top:2rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-3xl{font-size:1.875rem;line-height:2.25rem}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-6xl{font-size:3.75rem;line-height:1}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[15vw\]{font-size:15vw}.text-\[20vw\]{font-size:20vw}.text-\[9px\]{font-size:9px}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-loose{line-height:2}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-\[0\.15em\]{letter-spacing:0.15em}.tracking-\[0\.1em\]{letter-spacing:0.1em}.tracking-\[0\.2em\]{letter-spacing:0.2em}.tracking-\[0\.3em\]{letter-spacing:0.3em}.tracking-widest{letter-spacing:0.1em}.text-\[\#444\]{--tw-text-opacity:1;color:rgb(68 68 68 / var(--tw-text-opacity, 1))}.text-\[\#555\]{--tw-text-opacity:1;color:rgb(85 85 85 / var(--tw-text-opacity, 1))}.text-\[\#666\]{--tw-text-opacity:1;color:rgb(102 102 102 / var(--tw-text-opacity, 1))}.text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-white\/50{color:rgb(255 255 255 / 0.5)}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.opacity-10{opacity:0.1}.opacity-30{opacity:0.3}.opacity-5{opacity:0.05}.opacity-60{opacity:0.6}.mix-blend-multiply{mix-blend-mode:multiply}.mix-blend-screen{mix-blend-mode:screen}.mix-blend-difference{mix-blend-mode:difference}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.drop-shadow-lg{--tw-drop-shadow:drop-shadow(0 10px 8px rgb(0 0 0 / 0.04)) drop-shadow(0 4px 3px rgb(0 0 0 / 0.1));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.grayscale{--tw-grayscale:grayscale(100%);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur-\[2px\]{--tw-backdrop-blur:blur(2px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.duration-\[400ms\]{transition-duration:400ms}.ease-out{transition-timing-function:cubic-bezier(0, 0, 0.2, 1)}.selection\:bg-gray-300 *::selection{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.selection\:text-black *::selection{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.selection\:bg-gray-300::selection{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.selection\:text-black::selection{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.hover\:border-white:hover{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.hover\:bg-\[\#ccc\]:hover{--tw-bg-opacity:1;background-color:rgb(204 204 204 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-black:hover{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}.hover\:text-gray-400:hover{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.group:hover .group-hover\:w-full{width:100%}.group:hover .group-hover\:-translate-y-1{--tw-translate-y:-0.25rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:translate-x-2{--tw-translate-x:0.5rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:text-black{--tw-text-opacity:1;color:rgb(0 0 0 / var(--tw-text-opacity, 1))}@media (min-width: 768px){.md\:mb-0{margin-bottom:0px}.md\:mt-0{margin-top:0px}.md\:block{display:block}.md\:flex{display:flex}.md\:w-\[40\%\]{width:40%}.md\:w-\[50\%\]{width:50%}.md\:w-\[60\%\]{width:60%}.md\:flex-row{flex-direction:row}.md\:flex-row-reverse{flex-direction:row-reverse}.md\:items-end{align-items:flex-end}.md\:gap-24{gap:6rem}.md\:p-16{padding:4rem}.md\:p-8{padding:2rem}.md\:px-12{padding-left:3rem;padding-right:3rem}.md\:text-4xl{font-size:2.25rem;line-height:2.5rem}.md\:text-5xl{font-size:3rem;line-height:1}.md\:text-6xl{font-size:3.75rem;line-height:1}.md\:text-8xl{font-size:6rem;line-height:1}}@media (min-width: 1024px){.lg\:w-1\/2{width:50%}.lg\:flex-row{flex-direction:row}.lg\:border-b-0{border-bottom-width:0px}.lg\:border-r{border-right-width:1px}}</style></head>
+<body class="antialiased selection:bg-gray-300 selection:text-black" style="margin: 0px; padding: 0px; width: 100%; overflow-y: auto; overflow-x: hidden;">
+
+    <!-- GLOBAL NAV -->
+    <nav class="fixed top-0 w-full z-50 border-b border-white/10 px-6 py-4 bg-black/80 backdrop-blur-[6px]">
+
+        <!-- Estado HOME -->
+        <div id="nav-home" class="flex justify-between items-center">
+            <div class="text-xs tracking-[0.2em] font-medium text-white uppercase">Est. 2026</div>
+            <div class="flex gap-8 text-[10px] tracking-[0.15em] font-semibold text-white">
+                <button onclick="showView('view-hoodies')" class="nav-btn uppercase cursor-pointer bg-transparent border-none text-inherit font-inherit tracking-[0.15em]">Hoodies</button>
+                <button onclick="showView('view-hats')" class="nav-btn uppercase cursor-pointer bg-transparent border-none text-inherit font-inherit tracking-[0.15em]">Hats</button>
+                <a href="#contacto" class="nav-btn uppercase">Contacto</a>
+            </div>
+        </div>
+
+        <!-- Estado CATÁLOGO (oculto por defecto) -->
+        <div id="nav-catalog" style="display:none" class="flex justify-between items-center">
+            <button onclick="goHome()" class="flex items-center gap-2 text-[10px] tracking-[0.2em] text-gray-400 hover:text-white uppercase transition-colors font-semibold bg-transparent border-none cursor-pointer">
+                <i class="ph ph-arrow-left"></i> VOLVER
+            </button>
+            <span id="nav-cat-title" class="text-[10px] tracking-[0.3em] text-white uppercase font-semibold absolute left-1/2 -translate-x-1/2"></span>
+            <!-- Filtros (solo visibles en catálogo completo) -->
+            <div id="nav-cat-filters" style="display:none" class="flex gap-2">
+                <button onclick="filterCompleto('all')" data-filter="all" class="filter-btn text-[9px] tracking-[0.15em] uppercase font-semibold px-3 py-1.5 border border-white bg-white text-black transition-colors cursor-pointer">TODOS</button>
+                <button onclick="filterCompleto('hoodies')" data-filter="hoodies" class="filter-btn text-[9px] tracking-[0.15em] uppercase font-semibold px-3 py-1.5 border border-[#444] text-gray-500 hover:border-white hover:text-white transition-colors bg-transparent cursor-pointer">HOODIES</button>
+                <button onclick="filterCompleto('hats')" data-filter="hats" class="filter-btn text-[9px] tracking-[0.15em] uppercase font-semibold px-3 py-1.5 border border-[#444] text-gray-500 hover:border-white hover:text-white transition-colors bg-transparent cursor-pointer">HATS</button>
+            </div>
+            <!-- Placeholder para alinear cuando no hay filtros -->
+            <div id="nav-cat-spacer" class="w-16"></div>
+        </div>
+
+    </nav>
+
+    <!-- HERO SECTION: OVERSIZED LOGO PRESENCE -->
+    <header id="site-header" class="relative w-full h-[800px] min-h-[800px] flex flex-col items-center justify-center overflow-hidden bg-black">
+        <!-- Background Editorial Image -->
+        <div class="absolute inset-0 w-full h-full z-0 pointer-events-none opacity-60">
+            <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776331982444-MS_BG.png" alt="Modelo editorial con hoodie boxy y gorra en entorno de concreto" class="w-full h-full object-cover object-center bg-pan">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#030303] via-[#030303]/40 to-black/20 mix-blend-multiply"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-[#030303] block h-[240px]"></div>
+        </div>
+
+        <!-- 3D Chrome Logo - Hero Centerpiece -->
+        <div class="relative z-10 w-[90%] max-w-[1000px] flex flex-col items-center justify-center -mt-24">
+            <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776331353308-MODOSTORE.png" alt="Modo Store 3D Chrome Logo" class="w-full h-auto chrome-logo object-contain">
+
+            <!-- Redes sociales -->
+            <div class="flex gap-4 mt-3">
+                <a href="https://www.instagram.com/modo_storemx" target="_blank" rel="noopener" class="flex items-center gap-2 border border-white/40 hover:border-white text-white/80 hover:text-white transition-all px-5 py-2 text-[10px] tracking-[0.2em] uppercase font-semibold">
+                    <i class="ph-fill ph-instagram-logo text-base"></i> Instagram
+                </a>
+                <a href="https://www.tiktok.com/@modostoremx" target="_blank" rel="noopener" class="flex items-center gap-2 border border-white/40 hover:border-white text-white/80 hover:text-white transition-all px-5 py-2 text-[10px] tracking-[0.2em] uppercase font-semibold">
+                    <i class="ph-fill ph-tiktok-logo text-base"></i> TikTok
+                </a>
+            </div>
+
+            <a onclick="document.getElementById('hoodies').scrollIntoView({behavior:'smooth'})" class="mt-6 text-white/70 hover:text-white transition-all flex flex-col items-center gap-3 cursor-pointer">
+                <span class="tracking-[0.25em] text-sm font-semibold uppercase">Descubrir</span>
+                <i class="ph ph-arrow-down text-2xl animate-bounce"></i>
+            </a>
+        </div>
+        
+        <!-- Architectural lines -->
+        <div class="absolute right-6 bottom-12 border-l border-white/20 pl-4 z-10 hidden md:block">
+            <p class="text-[9px] text-gray-500 tracking-widest writing-vertical-rl rotate-180">
+            <br>
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+Querétaro, México.</p>
+        </div>
+    </header>
+
+    <!-- SECTION 01: ARCHIVIO (Asymmetrical Lookbook Grid) -->
+    <section id="site-archivio" class="relative w-full px-4 md:px-12 py-32 bg-[#050505]">
+        
+        <div class="w-full max-w-7xl mx-auto">
+            <!-- Section Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-24 border-b border-[#1A1A1A] pb-8">
+                <div>
+                    <h2 class="text-6xl md:text-8xl font-display uppercase leading-none text-white shadow-sm">
+                        Resale<br>
+                        <span class="text-stroke-silver">Archivo</span>
+                    </h2>
+                </div>
+                <div class="mt-8 md:mt-0 text-right max-w-sm">
+                    <p class="text-xs text-gray-400 tracking-widest leading-loose"><br><br>                    </p>
+                </div>
+            </div>
+
+            <!-- Asymmetrical Grid Container -->
+            <div class="flex flex-col gap-32">
+
+                <!-- Block 01: Full Width / 60-40 Split (Hoodie Focus) -->
+                <article id="hoodies" class="flex flex-col md:flex-row items-center gap-12 md:gap-24 relative">
+                    <!-- Background large typography -->
+                    <div class="absolute top-[-5%] left-[-5%] text-[15vw] font-display text-stroke opacity-30 select-none z-0 pointer-events-none">01</div>
+                    
+                    <div class="w-full md:w-[60%] h-[600px] img-wrap z-10">
+                        <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776333790604-MODOSTORE__1_.png" alt="Modelo vistiendo un hoodie negro de alto gramaje fit boxy" class="w-full h-full object-cover bg-[#111]">
+                    </div>
+                    
+                    <div class="w-full md:w-[40%] flex flex-col justify-center z-10">
+                        <div class="border-l-2 border-white pl-6 py-2">
+                            <span class="text-[10px] tracking-[0.2em] text-gray-500 block mb-2" style="font-weight: 700; color: rgb(194, 194, 194);">Entregas Personales en Querétaro</span>
+                            <h3 class="text-3xl md:text-5xl font-brutal font-bold text-white uppercase mb-4 leading-tight"><br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      <br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        CATALOGO</h3>
+                            <p class="text-sm text-gray-400 mb-10 leading-relaxed">Ofrecemos mayoreo y menudeo</p>
+                            
+                            <!-- WhatsApp CTA Button -->
+                            <button onclick="showView('view-hoodies')" class="group inline-flex items-center justify-between w-full max-w-[320px] bg-white text-black px-6 py-4 hover:bg-gray-200 transition-colors uppercase tracking-[0.1em] text-xs font-semibold cursor-pointer border-none">
+                                <span>VER HOODIES</span>
+                                <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Block 02: 40-60 Split Reversed (Caps Focus) -->
+                <article id="hats" class="flex flex-col md:flex-row-reverse items-center gap-12 md:gap-24 relative">
+                    <div class="absolute top-[-10%] right-[-5%] text-[15vw] font-display text-stroke opacity-30 select-none z-0 pointer-events-none">02</div>
+                    
+                    <div class="w-full md:w-[50%] h-[700px] img-wrap z-10">
+                        <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776336169022-MODOSTORE__5_.png" alt="Fotografía macro de una gorra streetwear exclusiva en oscuridad estructural" class="w-full h-full object-cover object-left bg-[#111]" style="opacity: 0.46; border-radius: 1px;">
+                    </div>
+                    
+                    <div class="w-full md:w-[50%] flex justify-end z-10">
+                        <div class="border-r-2 border-white pr-6 py-2 text-right">
+                            <span class="text-[10px] tracking-[0.2em] text-gray-500 block mb-2" style="font-weight: 700; color: rgb(194, 194, 194);">Envios personales en Querétaro</span>
+                            <h3 class="text-3xl md:text-5xl font-brutal font-bold text-white uppercase mb-4 leading-tight">CATALOGO        </h3>
+                            <p class="text-sm text-gray-400 mb-10 leading-relaxed ml-auto max-w-md"><br>Ofrecemos mayoreo y menudeo<br></p>
+                            
+                            <button onclick="showView('view-hats')" class="group inline-flex items-center justify-between w-full max-w-[320px] ml-auto border border-white text-white px-6 py-4 hover:bg-white hover:text-black transition-colors uppercase tracking-[0.1em] text-xs font-semibold cursor-pointer bg-transparent">
+                                <span>VER HATS</span>
+                                <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                            </button>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Block 03: CTA Catálogo Completo -->
+                <article class="flex flex-col items-center relative mt-12 pb-12">
+                    <div class="w-full max-w-[85%] h-[500px] img-wrap z-10 mb-[-100px] relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/60 to-transparent z-10"></div>
+                        <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776335486209-MODOSTORE__3_.png" alt="Catálogo completo Modo Store" class="w-full h-full object-cover object-top bg-[#111]">
+                    </div>
+                    <div class="relative z-20 text-center flex flex-col items-center">
+                        <h3 class="text-4xl md:text-6xl font-display uppercase leading-none text-white mb-8">CATALOGO<br><span class="text-stroke-silver">COMPLETO</span></h3>
+                        <button onclick="showView('view-completo')" class="group inline-flex items-center justify-center gap-4 bg-white text-black px-8 py-4 hover:bg-[#ccc] transition-colors uppercase tracking-[0.1em] text-xs font-semibold border-2 border-white cursor-pointer">
+                            <span>VER TODO</span>
+                            <i class="ph ph-arrow-right group-hover:translate-x-2 transition-transform"></i>
+                        </button>
+                    </div>
+                </article>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- VISTA: HOODIES CATALOG                    -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="view-hoodies" style="display:none" class="min-h-screen bg-[#050505] pt-[72px]">
+        <!-- Hero de categoría -->
+        <div class="w-full h-[260px] relative overflow-hidden">
+            <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776333790604-MODOSTORE__1_.png" alt="Hoodies Modo Store" class="w-full h-full object-cover object-top" style="filter:grayscale(60%) contrast(1.1)">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent"></div>
+            <div class="absolute bottom-8 left-6 md:left-12">
+                <h2 class="text-5xl md:text-7xl font-display uppercase text-white leading-none">HOODIES</h2>
+                <p class="text-[10px] tracking-[0.3em] text-gray-500 mt-2 uppercase font-mono" id="count-hoodies"></p>
+            </div>
+        </div>
+        <!-- Grid -->
+        <div class="w-full max-w-7xl mx-auto px-4 md:px-12 py-16">
+            <div id="grid-hoodies" class="flex gap-5 overflow-x-auto pb-4 catalog-scroll"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- VISTA: HATS CATALOG                        -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="view-hats" style="display:none" class="min-h-screen bg-[#050505] pt-[72px]">
+        <div class="w-full h-[260px] relative overflow-hidden">
+            <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776336169022-MODOSTORE__5_.png" alt="Hats Modo Store" class="w-full h-full object-cover object-left" style="filter:grayscale(60%) contrast(1.1)">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/50 to-transparent"></div>
+            <div class="absolute bottom-8 left-6 md:left-12">
+                <h2 class="text-5xl md:text-7xl font-display uppercase text-white leading-none">HATS</h2>
+                <p class="text-[10px] tracking-[0.3em] text-gray-500 mt-2 uppercase font-mono" id="count-hats"></p>
+            </div>
+        </div>
+        <div class="w-full max-w-7xl mx-auto px-4 md:px-12 py-16">
+            <div id="grid-hats" class="flex gap-5 overflow-x-auto pb-4 catalog-scroll"></div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════ -->
+    <!-- VISTA: CATÁLOGO COMPLETO                   -->
+    <!-- ══════════════════════════════════════════ -->
+    <div id="view-completo" style="display:none" class="min-h-screen bg-[#050505] pt-[72px]">
+        <div class="w-full max-w-7xl mx-auto px-4 md:px-12 py-16">
+            <div id="grid-completo" class="flex gap-5 overflow-x-auto pb-4 catalog-scroll"></div>
+        </div>
+    </div>
+
+    <!-- FOOTER / FINAL CTA -->
+    <footer id="contacto" class="relative w-full py-24 bg-black border-t border-[#111] flex flex-col items-center justify-center">
+
+        <!-- Subtle large chrome logo at absolute bottom -->
+        <img src="https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776331353308-MODOSTORE.png" alt="Modo Store Logo Watermark" class="absolute opacity-10 w-[1200px] pointer-events-none select-none z-0 mix-blend-screen grayscale" style="border-radius: 57px;">
+
+        <div class="relative z-10 flex flex-col items-center text-center px-4">
+            <h2 class="text-2xl md:text-4xl font-brutal uppercase text-white mb-6">
+                Eleva tu rotacion.
+            </h2>
+            <p class="text-xs text-gray-500 mb-10 tracking-widest max-w-md">
+                INVENTARIO DINAMICO. LAS PIEZAS SE MUEVEN RAPIDO. CONTACTANOS PARA ATENCION PERSONALIZADA.
+            </p>
+
+            <a href="https://wa.me/524681397198" target="_blank" rel="noopener" class="group relative inline-flex items-center justify-center bg-transparent border border-[#333] px-10 py-5 overflow-hidden transition-all hover:border-white">
+                <!-- Hover Sweep Effect -->
+                <div class="absolute inset-0 w-0 bg-white transition-all duration-[400ms] ease-out group-hover:w-full z-0"></div>
+                <span class="relative z-10 flex items-center gap-3 text-xs font-bold tracking-[0.15em] text-white group-hover:text-black uppercase">
+                    <i class="ph-fill ph-whatsapp-logo text-xl"></i>
+                    CONTACTANOS
+                </span>
+            </a>
+        </div>
+
+        <!-- Micro Footer Info -->
+        <div class="relative z-10 mt-24 w-full max-w-6xl px-6 border-t border-white/5 pt-8 flex justify-center">
+            <span class="text-[10px] text-[#444] tracking-[0.2em] uppercase">MODO STORE. ALL RIGHTS RESERVED</span>
+        </div>
+    </footer>
+
+
+
+
+<script>
+// ─────────────────────────────────────────────
+//  FUENTE DE DATOS — Google Sheets (CSV)
+//  Para actualizar productos: edita el Sheet
+//  Para agregar imagen: sube a Cloudinary, pega URL en Sheet
+// ─────────────────────────────────────────────
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSS6Mx0BUlDiKEMDAhuGDWGZfgySlp_Jj8mqr4x1dtFy73QBeX7gg_XkHkAssHGQCtnPC2tQemphOi4/pub?output=csv';
+
+// Productos de respaldo si falla la conexión al Sheet
+const FALLBACK_PRODUCTS = [
+    {
+        id: 1,
+        name: "OG Heavyweight Hoodie",
+        category: "hoodies",
+        price: "$899",
+        tag: "DEADSTOCK",
+        image: "https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776333790604-MODOSTORE__1_.png",
+        description: "Hoodie boxy de alto gramaje, fleece premium 400gsm. Fit oversize, costuras dobles interiores."
+    },
+    {
+        id: 2,
+        name: "Boxy Crop Hoodie",
+        category: "hoodies",
+        price: "$750",
+        tag: "DISPONIBLE",
+        image: "https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776335486209-MODOSTORE__3_.png",
+        description: "Silueta crop con puños acanalados. Colorway neutro, ideal para layering streetwear."
+    },
+    {
+        id: 3,
+        name: "Classic Pullover",
+        category: "hoodies",
+        price: "$699",
+        tag: "VNDS",
+        image: "https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776331982444-MS_BG.png",
+        description: "Pullover clásico con capucha ajustable. Condición VNDS — usado una sola vez."
+    },
+    {
+        id: 4,
+        name: "Structured Panel Cap",
+        category: "hats",
+        price: "$450",
+        tag: "DEADSTOCK",
+        image: "https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776336169022-MODOSTORE__5_.png",
+        description: "Gorra 6 paneles estructura rígida, bordado frontal puff print. Deadstock, sin uso."
+    },
+    {
+        id: 5,
+        name: "Dad Hat Washed",
+        category: "hats",
+        price: "$380",
+        tag: "DISPONIBLE",
+        image: "https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776336169022-MODOSTORE__5_.png",
+        description: "Dad hat lavado con efecto vintage. Correa ajustable de metal. Talla única."
+    },
+    {
+        id: 6,
+        name: "6-Panel Streetwear",
+        category: "hats",
+        price: "$420",
+        tag: "VNDS",
+        image: "https://cdn.aidesigner.ai/user-assets/86c5129f670c1756/1776336169022-MODOSTORE__5_.png",
+        description: "Panel lateral con detalle en contraste. Visera plana, snapback ajustable."
+    }
+];
+
+let CATALOG = [];
+
+function parseCSV(csv) {
+    const rows = csv.trim().split('\n');
+    const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    return rows.slice(1).map((row, i) => {
+        // Maneja celdas con comas dentro de comillas
+        const vals = [];
+        let cur = '', inQuotes = false;
+        for (let ch of row) {
+            if (ch === '"') { inQuotes = !inQuotes; }
+            else if (ch === ',' && !inQuotes) { vals.push(cur.trim()); cur = ''; }
+            else { cur += ch; }
+        }
+        vals.push(cur.trim());
+        const obj = { id: i + 1 };
+        headers.forEach((h, j) => obj[h] = (vals[j] || '').replace(/^"|"$/g, '').trim());
+        return obj;
+    }).filter(p => p.name && p.name.length > 0);
+}
+
+async function loadCatalog() {
+    try {
+        const res = await fetch(SHEET_CSV_URL);
+        if (!res.ok) throw new Error('Sheet no disponible');
+        const csv = await res.text();
+        const parsed = parseCSV(csv);
+        CATALOG = parsed.length > 0 ? parsed : FALLBACK_PRODUCTS;
+    } catch (e) {
+        console.warn('No se pudo cargar el Sheet, usando productos de respaldo.', e);
+        CATALOG = FALLBACK_PRODUCTS;
+    }
+    renderGrid('hoodies', 'grid-hoodies');
+    renderGrid('hats',    'grid-hats');
+    renderGrid('all',     'grid-completo');
+}
+
+// ─────────────────────────────────────────────
+//  Motor de renderizado — no modificar
+// ─────────────────────────────────────────────
+function productCard(p) {
+    const tagHTML = p.tag
+        ? `<span class="absolute top-3 left-3 text-[8px] tracking-[0.2em] bg-black/90 text-white px-2 py-1 uppercase font-mono border border-[#333]">${p.tag}</span>`
+        : '';
+    return `
+        <article class="group border border-[#222] bg-[#0A0A0A] overflow-hidden flex flex-col flex-shrink-0" style="width:300px">
+            <div class="relative overflow-hidden img-wrap" style="height:340px">
+                <img src="${p.image}" alt="${p.name}" class="w-full h-full object-cover object-center" loading="lazy">
+                ${tagHTML}
+            </div>
+            <div class="p-5 flex flex-col flex-1 border-t border-[#1A1A1A]">
+                <span class="text-[9px] tracking-[0.25em] text-gray-600 uppercase mb-2">${p.category}</span>
+                <h4 class="text-sm font-bold text-white uppercase mb-2 leading-tight">${p.name}</h4>
+                <p class="text-xs text-gray-500 mb-6 leading-relaxed flex-1">${p.description}</p>
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-[#1A1A1A]">
+                    <span class="text-sm font-semibold text-white">${p.price}</span>
+                    <a href="https://wa.me/524681397198" target="_blank" rel="noopener" class="text-[9px] tracking-[0.15em] border border-[#444] text-gray-400 px-4 py-2 hover:border-white hover:text-white transition-colors uppercase font-semibold">CONSULTAR</a>
+                </div>
+            </div>
+        </article>`;
+}
+
+// ─────────────────────────────────────────────
+//  Navegación entre vistas
+// ─────────────────────────────────────────────
+const ALL_VIEWS = ['view-hoodies', 'view-hats', 'view-completo'];
+const HOME_ELEMENTS = ['site-header', 'site-archivio'];
+
+const NAV_TITLES = {
+    'view-hoodies':  'HOODIES',
+    'view-hats':     'HATS',
+    'view-completo': 'CATÁLOGO COMPLETO'
+};
+
+function setNavCatalog(viewId) {
+    document.getElementById('nav-home').style.display = 'none';
+    document.getElementById('nav-catalog').style.display = 'flex';
+    document.getElementById('nav-cat-title').textContent = NAV_TITLES[viewId] || '';
+    const isCompleto = viewId === 'view-completo';
+    document.getElementById('nav-cat-filters').style.display = isCompleto ? 'flex' : 'none';
+    document.getElementById('nav-cat-spacer').style.display  = isCompleto ? 'none' : 'block';
+}
+
+function setNavHome() {
+    document.getElementById('nav-home').style.display = 'flex';
+    document.getElementById('nav-catalog').style.display = 'none';
+}
+
+function revealView(viewId) {
+    ALL_VIEWS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.style.display = 'none'; el.classList.remove('view-enter', 'view-exit'); }
+    });
+    HOME_ELEMENTS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    const target = document.getElementById(viewId);
+    target.style.display = 'block';
+    void target.offsetWidth; // force reflow so animation restarts
+    target.classList.add('view-enter');
+    document.body.scrollTop = 0;
+    setNavCatalog(viewId);
+}
+
+function showView(viewId) {
+    // Find the currently visible view or home element to animate out
+    const currentView = ALL_VIEWS.find(id => document.getElementById(id).style.display !== 'none');
+
+    if (currentView) {
+        const currentEl = document.getElementById(currentView);
+        currentEl.classList.remove('view-enter');
+        currentEl.classList.add('view-exit');
+        currentEl.addEventListener('animationend', () => revealView(viewId), { once: true });
+    } else {
+        // Animate home out — use site-archivio as the main element
+        const homeEl = document.getElementById('site-archivio') || document.getElementById('site-header');
+        if (homeEl) {
+            homeEl.classList.add('view-exit');
+            homeEl.addEventListener('animationend', () => {
+                homeEl.classList.remove('view-exit');
+                revealView(viewId);
+            }, { once: true });
+        } else {
+            revealView(viewId);
+        }
+    }
+}
+
+function goHome() {
+    const currentView = ALL_VIEWS.find(id => document.getElementById(id).style.display !== 'none');
+
+    const revealHome = () => {
+        ALL_VIEWS.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.style.display = 'none'; el.classList.remove('view-enter', 'view-exit'); }
+        });
+        HOME_ELEMENTS.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) { el.style.display = ''; el.classList.remove('view-exit'); }
+        });
+        // Animate home in
+        const homeEl = document.getElementById('site-header');
+        if (homeEl) {
+            void homeEl.offsetWidth;
+            homeEl.classList.add('view-enter');
+            homeEl.addEventListener('animationend', () => homeEl.classList.remove('view-enter'), { once: true });
+        }
+        setNavHome();
+        document.body.scrollTop = 0;
+    };
+
+    if (currentView) {
+        const currentEl = document.getElementById(currentView);
+        currentEl.classList.remove('view-enter');
+        currentEl.classList.add('view-exit');
+        currentEl.addEventListener('animationend', revealHome, { once: true });
+    } else {
+        revealHome();
+    }
+}
+
+function renderGrid(category, containerId) {
+    const items = category === 'all'
+        ? CATALOG
+        : CATALOG.filter(p => p.category === category);
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = items.length
+        ? items.map(productCard).join('')
+        : '<p class="text-xs text-gray-600 tracking-widest uppercase col-span-3">Sin productos disponibles.</p>';
+    // Actualizar contador en la vista
+    const countEl = document.getElementById('count-' + containerId.replace('grid-', ''));
+    if (countEl) countEl.textContent = items.length + ' PIEZAS DISPONIBLES';
+}
+
+function filterCompleto(category) {
+    renderGrid(category, 'grid-completo');
+    document.querySelectorAll('#nav-cat-filters .filter-btn').forEach(btn => {
+        const active = btn.dataset.filter === category;
+        btn.classList.toggle('bg-white',      active);
+        btn.classList.toggle('text-black',    active);
+        btn.classList.toggle('border-white',  active);
+        btn.classList.toggle('text-gray-500', !active);
+        btn.classList.toggle('border-[#444]', !active);
+        btn.classList.toggle('bg-transparent',!active);
+    });
+}
+
+// Cargar catálogo desde Google Sheets al iniciar
+document.addEventListener('DOMContentLoaded', loadCatalog);
+</script>
+</body></html>
