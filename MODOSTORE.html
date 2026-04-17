@@ -695,6 +695,7 @@ async function loadCatalog() {
         const res = await fetch(SHEET_CSV_URL);
         if (!res.ok) throw new Error('Sheet no disponible');
         const csv = await res.text();
+        console.log('[loadCatalog] CSV crudo (primeros 200 chars):', csv.slice(0, 200));
         const parsed = parseCSV(csv);
         CATALOG = parsed.length > 0 ? parsed : FALLBACK_PRODUCTS;
         console.log('[loadCatalog] Sheet cargado OK. Productos:', CATALOG.length, '| Fuente:', parsed.length > 0 ? 'SHEET' : 'FALLBACK (sheet vacío)');
