@@ -671,20 +671,31 @@ const FALLBACK_PRODUCTS = [
 let CATALOG = [];
 
 function parseCSV(csv) {
-    const rows = csv.trim().split('\n');
-    const headers = rows[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    return rows.slice(1).map((row, i) => {
-        // Maneja celdas con comas dentro de comillas
+    function splitRow(row) {
         const vals = [];
         let cur = '', inQuotes = false;
-        for (let ch of row) {
-            if (ch === '"') { inQuotes = !inQuotes; }
-            else if (ch === ',' && !inQuotes) { vals.push(cur.trim()); cur = ''; }
-            else { cur += ch; }
+        for (let i = 0; i < row.length; i++) {
+            const ch = row[i];
+            if (inQuotes) {
+                if (ch === '"' && row[i + 1] === '"') { cur += '"'; i++; }
+                else if (ch === '"') { inQuotes = false; }
+                else { cur += ch; }
+            } else {
+                if (ch === '"') { inQuotes = true; }
+                else if (ch === ',') { vals.push(cur); cur = ''; }
+                else { cur += ch; }
+            }
         }
-        vals.push(cur.trim());
+        vals.push(cur);
+        return vals.map(v => v.trim());
+    }
+
+    const rows = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim().split('\n');
+    const headers = splitRow(rows[0]);
+    return rows.slice(1).map((row, i) => {
+        const vals = splitRow(row);
         const obj = { id: i + 1 };
-        headers.forEach((h, j) => obj[h] = (vals[j] || '').replace(/^"|"$/g, '').trim());
+        headers.forEach((h, j) => obj[h] = vals[j] ?? '');
         return obj;
     }).filter(p => p.name && p.name.length > 0);
 }
